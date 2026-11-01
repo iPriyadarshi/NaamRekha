@@ -1,0 +1,97 @@
+# ---- NaamRekha .gitignore ----
+# Keep the repo to source, notebooks, docs, configs, and small result files.
+# Big things (datasets, model weights, caches) live on Drive/Kaggle, not in Git.
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+.conda/
+*.egg
+
+# ---- Environment / secrets ----
+.env
+.env.*
+*.local
+# HuggingFace / API tokens (never commit these)
+.huggingface/
+hf_token*
+*.key
+
+# ---- Datasets (Naamapadam etc. are downloaded, not committed) ----
+data/
+datasets/
+*.conll
+*.conllu
+# Allow a few tiny sample/debug files to be tracked explicitly
+!data/samples/**
+
+# ---- Model weights & checkpoints (live on Drive/Kaggle) ----
+checkpoints/**
+!checkpoints/.gitkeep
+!checkpoints/**/*.json          # keep configs / pointers, drop the binaries
+!checkpoints/**/*.yaml
+!checkpoints/**/*.md
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.h5
+*.onnx
+*.gguf
+# fastText / word vectors used by the BiLSTM-CRF
+*.vec
+*.vec.gz
+*.model
+
+# ---- Experiment tracking & caches ----
+wandb/
+mlruns/
+.cache/
+hf_cache/
+transformers_cache/
+~/.cache/huggingface/
+
+# ---- Results ----
+# Track the results sheet (CSV) and metrics JSON; drop heavy artifacts.
+results/**/*.png
+results/**/*.jpg
+results/**/*.pdf
+results/**/*.parquet
+results/**/*.pkl
+
+# ---- Logs ----
+*.log
+logs/
+runs/
+lightning_logs/
+
+# ---- Notebooks: keep .ipynb, drop checkpoint copies & converted exports ----
+*-checkpoint.ipynb
+*.nbconvert.ipynb
+
+# ---- OS / editor cruft ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
