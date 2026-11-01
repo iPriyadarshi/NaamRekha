@@ -1,0 +1,41 @@
+[project]
+name = "naamrekha"
+version = "0.1.0"
+description = "Named Entity Recognition for Indian languages (Hindi + Marathi/Bengali) with cross-lingual transfer."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Core DL + modeling
+    "torch",
+    "transformers",
+    "datasets",
+    "accelerate",
+    # NER evaluation (entity-level F1): the shared metric
+    "seqeval",
+    # Tokenizers for MuRIL / IndicBERT
+    "sentencepiece",
+    # BiLSTM-CRF baseline
+    "pytorch-crf",
+    # Self-hosted LLM prompting (4-bit loading of 7-8B models on a GPU)
+    "bitsandbytes",
+    # Data handling, analysis, plots
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    # Utilities
+    "huggingface-hub",
+    "tqdm",
+]
+
+[dependency-groups]
+# Local dev only (running notebooks, linting); not needed on Colab/Kaggle.
+dev = [
+    "ipykernel",
+    "jupyterlab",
+    "ruff",
+]
+
+[tool.uv]
+# Exact versions are locked in uv.lock (commit it). Notebooks still pin
+# their own versions in the first cell per docs/04-compute.md.

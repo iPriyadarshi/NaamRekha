@@ -32,5 +32,6 @@ We have **only free Colab and Kaggle GPUs**. The binding constraint is **session
 
 ## Hygiene
 
+- Local dev uses uv + Python 3.12 (`pyproject.toml`, `.python-version`, committed `uv.lock`). Colab/Kaggle bring their own Python and CUDA, so they do not use that env.
 - Pin library versions in each notebook's first cell (HF `transformers`, `datasets`, `seqeval`, `torch`) so runs are reproducible across machines.
 - Fix all random seeds and record them in the results-sheet `notes`.

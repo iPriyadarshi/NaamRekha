@@ -35,12 +35,12 @@ hf_token*
 *.key
 
 # ---- Datasets (Naamapadam etc. are downloaded, not committed) ----
-data/
+# Ignore data/ contents but allow a tracked samples/ subfolder for tiny fixtures.
+data/*
+!data/samples/
 datasets/
 *.conll
 *.conllu
-# Allow a few tiny sample/debug files to be tracked explicitly
-!data/samples/**
 
 # ---- Model weights & checkpoints (live on Drive/Kaggle) ----
 checkpoints/**
