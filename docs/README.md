@@ -6,15 +6,16 @@ Indian-language Named Entity Recognition (NER). Tag **person / location / organi
 
 ## How to use this folder
 
-| Doc                                    | What it covers                                             | Primary owner         |
-| -------------------------------------- | ---------------------------------------------------------- | --------------------- |
-| [00-overview.md](00-overview.md)       | Problem, dataset, approach, research angle                 | Lead                  |
-| [01-roadmap.md](01-roadmap.md)         | Phased plan, gates, status                                 | Lead                  |
-| [02-roles.md](02-roles.md)             | Who owns what                                              | Lead                  |
-| [03-conventions.md](03-conventions.md) | **The shared contract**: tag scheme, eval, results logging | Lead                  |
-| [04-compute.md](04-compute.md)         | Colab / Kaggle strategy, checkpointing                     | Shreyank Sthavaramath |
-| [05-pitfalls.md](05-pitfalls.md)       | Known bugs & gotchas; add as we hit them                   | Everyone              |
-| [06-decisions.md](06-decisions.md)     | Decisions log: binding choices, newest at bottom           | Lead                  |
+| Doc                                    | What it covers                                               | Primary owner         |
+| -------------------------------------- | ------------------------------------------------------------ | --------------------- |
+| [00-overview.md](00-overview.md)       | Problem, dataset, approach, research angle                   | Lead                  |
+| [01-roadmap.md](01-roadmap.md)         | Phased plan, gates, status                                   | Lead                  |
+| [02-roles.md](02-roles.md)             | Who owns what                                                | Lead                  |
+| [03-conventions.md](03-conventions.md) | **The shared contract**: tag scheme, eval, results logging   | Lead                  |
+| [04-compute.md](04-compute.md)         | Colab / Kaggle strategy, checkpointing                       | Shreyank Sthavaramath |
+| [05-pitfalls.md](05-pitfalls.md)       | Known bugs & gotchas; add as we hit them                     | Everyone              |
+| [06-decisions.md](06-decisions.md)     | Decisions log: binding choices, newest at bottom             | Lead                  |
+| [phase1/](phase1/README.md)            | Phase 1 data inspection findings and the fixed data contract | Lead                  |
 
 ## Read this first: the three team laws
 

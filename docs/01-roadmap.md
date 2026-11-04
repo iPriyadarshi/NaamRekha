@@ -4,7 +4,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 
 | Phase | Focus                                        | Owner                                | Status      |
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
-| 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | not started |
+| 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | in progress |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | not started |
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
@@ -15,7 +15,7 @@ Status legend: not started, in progress, gate passed, blocked
 
 ---
 
-## Phase 1: Infrastructure (Priyadarshi Kumar / Lead; whole team runs it once)
+## Phase 1: Infrastructure (Priyadarshi Kumar / Lead)
 
 Build the foundation everyone depends on:
 
@@ -23,7 +23,7 @@ Build the foundation everyone depends on:
 - `seqeval` evaluation harness (entity-level F1, per type).
 - Shared **results sheet** (see [03-conventions.md](03-conventions.md) for the exact columns).
 
-**Gate:** you can load Hindi, print the IOB2 tag distribution, and score a dummy all-`O` prediction with seqeval. Every team member has run the notebook once.
+**Gate:** you can load Hindi, print the IOB2 tag distribution, and score a dummy all-`O` prediction with seqeval.
 
 ## Phase 2: BiLSTM-CRF baseline (Sajan Kumar)
 
@@ -77,7 +77,3 @@ Then Ranjeet Kumar Yadav and the lead jointly do error analysis across stages: w
 - The script-vs-family discussion (the research angle).
 
 **Gate:** report done; every number in it traceable to a logged run.
-
----
-
-Material decisions are recorded in [06-decisions.md](06-decisions.md), not here.
