@@ -4,7 +4,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 
 | Phase | Focus                                        | Owner                                | Status      |
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
-| 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | in progress |
+| 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | not started |
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
@@ -24,6 +24,8 @@ Build the foundation everyone depends on:
 - Shared **results sheet** (see [03-conventions.md](03-conventions.md) for the exact columns).
 
 **Gate:** you can load Hindi, print the IOB2 tag distribution, and score a dummy all-`O` prediction with seqeval.
+
+Check it with `uv run python scripts/phase1_gate.py`. It uses only `src/` and also confirms Marathi and Bengali load in the same format.
 
 ## Phase 2: BiLSTM-CRF baseline (Sajan Kumar)
 
