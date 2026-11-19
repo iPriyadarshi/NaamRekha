@@ -1,1 +1,2 @@
 model,train_lang,test_lang,subset_size,epochs,F1_PER,F1_ORG,F1_LOC,F1_overall,checkpoint_path,notes
+BiLSTM-CRF,hi,hi,100000,7,0.8691823899371068,0.7130089374379344,0.7933333333333333,0.8037924677376876,https://drive.google.com/drive/folders/1rJNb-ee87BVorx8JY6pUd377fiiveqYU,ckpt=best.pt; seed=42; best_epoch=4; val_F1=0.7546; emb=fastText cc.hi.300+charBiLSTM; hidden=128; lr=0.001; bs=32; dropout=0.5; word_dropout=0.5

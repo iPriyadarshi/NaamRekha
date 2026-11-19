@@ -5,7 +5,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | Phase | Focus                                        | Owner                                | Status      |
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
 | 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
-| 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | not started |
+| 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
@@ -32,6 +32,10 @@ Check it with `uv run python scripts/phase1_gate.py`. It uses only `src/` and al
 fastText Hindi embeddings, then a BiLSTM, then a **CRF** layer. Start early; this is the hardest from-scratch code.
 
 **Gate:** Hindi gold entity F1 logged in the sheet. (Rough expectation: mid-to-high 60s F1. Do **not** chase SOTA here; it's a baseline.)
+
+Check it with `uv run python scripts/phase2_gate.py`. It confirms the BiLSTM-CRF Hindi row in the results sheet follows [03-conventions.md](03-conventions.md) and matches the output saved in the Phase 2 notebook.
+
+**Result:** Hindi gold entity F1 **0.8038** (PER 0.869 / ORG 0.713 / LOC 0.793), trained on a 100k silver subset. This is above the expected range and becomes the bar for Phase 3. Details in [phase2/README.md](phase2/README.md).
 
 ## Phase 3: Transformer fine-tuning (Shreyank Sthavaramath)
 
