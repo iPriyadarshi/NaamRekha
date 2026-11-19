@@ -33,6 +33,10 @@ fastText Hindi embeddings, then a BiLSTM, then a **CRF** layer. Start early; thi
 
 **Gate:** Hindi gold entity F1 logged in the sheet. (Rough expectation: mid-to-high 60s F1. Do **not** chase SOTA here; it's a baseline.)
 
+Check it with `uv run python scripts/phase2_gate.py`. It confirms the BiLSTM-CRF Hindi row in the results sheet follows [03-conventions.md](03-conventions.md) and matches the output saved in the Phase 2 notebook.
+
+**Result:** Hindi gold entity F1 **0.8038** (PER 0.869 / ORG 0.713 / LOC 0.793), trained on a 100k silver subset. This is above the expected range and becomes the bar for Phase 3. Details in [phase2/README.md](phase2/README.md).
+
 ## Phase 3: Transformer fine-tuning (Shreyank Sthavaramath)
 
 Fine-tune MuRIL (primary) and IndicBERT (comparison) for Hindi NER, using HuggingFace `AutoModelForTokenClassification` + `Trainer`. The subword label-alignment step is the bug hotspot of this phase; budget effort for it (see [05-pitfalls.md](05-pitfalls.md)).
