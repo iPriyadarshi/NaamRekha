@@ -6,7 +6,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
 | 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
-| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
+| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
 | 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | not started |
