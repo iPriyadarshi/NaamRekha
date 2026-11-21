@@ -6,7 +6,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
 | 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
-| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
+| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
 | 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | not started |
@@ -51,8 +51,6 @@ Fine-tune MuRIL (primary) and IndicBERT (comparison) for Hindi NER, using Huggin
 The chosen size then falls out of evidence, and the scaling curve itself is a figure for the writeup.
 
 **Gate:** both models scored on Hindi gold; MuRIL clearly beats the BiLSTM-CRF baseline; the scaling curve is logged in the results sheet and a working subset size is chosen from it. _If MuRIL does not beat the baseline, the label alignment is broken; stop and fix before moving on._
-
-**Result:** Hindi gold entity F1 **0.8330** (MuRIL, n=100,000), clearly beating the Phase 2 baseline (0.8038). IndicBERT comparison (`ai4bharat/indic-bert`, same size): F1 0.7198. **Re-verified per lead review (PR #4):** the n=10,000/30,000 scaling points were re-run with a `warmup_steps` + single-GPU fix (Kaggle's dual-T4 sessions were silently doubling the effective batch size) — 30,000 was confirmed to be the bug (F1 jumped from 0.0807 to 0.8217), while 10,000 still collapses, confirming it's a genuine small-data limitation, not a bug. Check the gate with `uv run python scripts/phase3_gate.py`. Details in [phase3/README.md](phase3/README.md).
 
 ## Phase 4: Cross-lingual transfer (Priyadarshi Kumar / Lead)
 
