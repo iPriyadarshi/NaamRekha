@@ -102,7 +102,8 @@ def main() -> None:
     baseline_f1 = max(float(r["F1_overall"]) for r in baseline_runs)
     print(f"  baseline (BiLSTM-CRF) Hindi gold F1 = {baseline_f1:.4f}")
 
-    phase_rows = [r for r in rows if r["model"] in PHASE_MODELS and r["train_lang"] == LANG and r["test_lang"] == LANG]
+    phase_rows = [r for r in rows if r["model"] in PHASE_MODELS and r["train_lang"] == LANG and r["test_lang"] == LANG
+                  and "phase=4" not in r["notes"]]
     check(len(phase_rows) >= 1, "Phase 3 rows logged")
     check(not any("DEBUG" in r["notes"] for r in phase_rows), "no DEBUG rows committed")
 
