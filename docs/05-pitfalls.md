@@ -6,7 +6,7 @@ Known traps. **Add to this as the team hits new ones**: a gotcha one person solv
 
 BERT-family tokenizers split a word into multiple wordpieces, but we have **one label per word**. Misaligning here is the #1 NER bug.
 
-- Label only the **first subword** of each original token with its tag.
+- Label only the **first subword** of each original token with its tag. If a SentencePiece tokenizer emits a standalone `▁` first, label the first real piece after it.
 - Set every **continuation subword** label to `-100` (so the loss ignores it).
 - Also `-100` the special tokens (`[CLS]`, `[SEP]`, padding).
 - Use the tokenizer's `word_ids()` to map subwords back to words.
@@ -42,4 +42,8 @@ BERT-family tokenizers split a word into multiple wordpieces, but we have **one 
 
 ### Add new gotchas below (name + what fixed it)
 
-- _(none yet)_
+- **Kaggle `DataParallel` doubles the batch size.** On T4 x2, `Trainer` silently splits each batch across both GPUs, so `batch_size=32` runs as 64 with half the steps. Set `CUDA_VISIBLE_DEVICES=0` before importing torch and check that the GPU count is 1.
+- **All-`O` collapse can be under-training.** MuRIL at 10k with lr 2e-5 and 3 epochs (939 steps) predicted no entities, but recovered to gold F1 0.8231 with 9 epochs. Check the step count before blaming data size.
+- **Standalone `▁` in IndicBERT.** About 2.9% of sampled Hindi words start with a bare `▁` piece. Labeling it puts the tag on a piece with no text. Use the notebook's `label_positions` helper.
+- **Kaggle has its own `/kaggle/src`.** Checking for `../src` makes a notebook think `/kaggle` is the repo. Check for a real repo file such as `src/data.py`.
+- **Upload before deleting checkpoints.** Clearing Kaggle disk before saving a model elsewhere makes its result impossible to reload or verify. Upload, confirm, log the pinned link, then delete.

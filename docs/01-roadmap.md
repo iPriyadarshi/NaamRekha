@@ -6,7 +6,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | ----- | -------------------------------------------- | ------------------------------------ | ----------- |
 | 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
-| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | not started |
+| 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
 | 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | not started |
@@ -51,6 +51,10 @@ Fine-tune MuRIL (primary) and IndicBERT (comparison) for Hindi NER, using Huggin
 The chosen size then falls out of evidence, and the scaling curve itself is a figure for the writeup.
 
 **Gate:** both models scored on Hindi gold; MuRIL clearly beats the BiLSTM-CRF baseline; the scaling curve is logged in the results sheet and a working subset size is chosen from it. _If MuRIL does not beat the baseline, the label alignment is broken; stop and fix before moving on._
+
+Check it with `uv run python scripts/phase3_gate.py`. It confirms every Phase 3 row comes from one clean notebook execution, uses the fixed training setup, links to a pinned checkpoint, and agrees with the docs.
+
+**Result:** Hindi gold entity F1 **0.8274** (MuRIL, n=300,000, seed 42; PER 0.888 / ORG 0.744 / LOC 0.822), with a three-seed mean of 0.8230. All three seeds beat the Phase 2 baseline (0.8038). IndicBERT, untuned at the same size: 0.7839. The working subset is 300,000, chosen by a pre-set validation-F1 rule. The choice was close: 100,000 missed the cutoff by 0.0005, and gold F1 is flat from 30,000 upward. Details in [phase3/README.md](phase3/README.md).
 
 ## Phase 4: Cross-lingual transfer (Priyadarshi Kumar / Lead)
 
