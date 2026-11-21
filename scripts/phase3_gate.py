@@ -31,6 +31,7 @@ SCORE_COLS = ["F1_PER", "F1_ORG", "F1_LOC", "F1_overall"]
 TRACE_COLS = ["model", "train_lang", "test_lang", "subset_size", "epochs", *SCORE_COLS]
 BASELINE_MODEL = "BiLSTM-CRF"
 MIN_SCALING_POINTS = 3  # at least this many distinct subset sizes logged for MuRIL
+MIN_MARGIN = 0.01  # "clearly beats" requires at least this much headroom over baseline
 
 
 def check(cond: bool, msg: str) -> None:
@@ -79,7 +80,8 @@ def main() -> None:
             check(0.0 <= float(r[c]) <= 1.0, f"{c} = {float(r[c]):.4f} is a valid entity F1 (n={r['subset_size']})")
 
     best_muril = max(muril_real, key=lambda r: float(r["F1_overall"]))
-    check(float(best_muril["F1_overall"]) > baseline_f1, f"best MuRIL F1 {float(best_muril['F1_overall']):.4f} clearly beats baseline {baseline_f1:.4f}")
+    margin = float(best_muril["F1_overall"]) - baseline_f1
+    check(margin >= MIN_MARGIN, f"best MuRIL F1 {float(best_muril['F1_overall']):.4f} clearly beats baseline {baseline_f1:.4f} by >= {MIN_MARGIN} (margin {margin:.4f})")
 
     print("\n3. IndicBERT comparison")
     indicbert_runs = [r for r in rows if r["model"] == "IndicBERT" and r["train_lang"] == LANG and r["test_lang"] == LANG]
