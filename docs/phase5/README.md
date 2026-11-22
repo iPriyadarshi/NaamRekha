@@ -1,6 +1,6 @@
 # Phase 5: LLM Prompting Baseline
 
-> **Status: draft. No LLM results yet.** The sections marked **PENDING** are filled in after the validation and final Kaggle runs. Nothing below reports a number that is not already in [results.csv](../../results/results.csv) or reproduced by a script in this repo.
+> **Status: final run done, gate passed.** Final gold results below come from one clean Kaggle execution of commit `f1d8cbd`; every number is in [results.csv](../../results/results.csv) or reproducible from [results/phase5/](../../results/phase5/).
 
 Notebook: [phase5-llm-prompting.ipynb](../../notebooks/phase5-llm-prompting.ipynb). Parser: [phase5_parser.py](../../scripts/phase5_parser.py), tested by [test_phase5_parser.py](../../scripts/test_phase5_parser.py). Gate: [phase5_gate.py](../../scripts/phase5_gate.py). Error analysis: [error_analysis.md](error_analysis.md).
 
@@ -40,14 +40,25 @@ Rules R1 to R9 are written at the top of [phase5_parser.py](../../scripts/phase5
 
 ## Results
 
-**PENDING (final stage, after the lead confirms Phase 4 is merged).**
+Hindi **gold** test, all **864** sentences, one clean Kaggle run (commit `f1d8cbd`, torch 2.11.0+cu130, transformers 5.22.1, greedy). Model `Qwen/Qwen2.5-7B-Instruct` (4-bit), revision `a09a35458c702b33eeacc393d103063234e8bc28`, prompt `v2/85343238`, config `798f7eb1`.
 
-| Setup | Overall | PER | ORG | LOC | Malformed / 864 | Unaligned spans |
-| ----- | ------- | --- | --- | --- | --------------- | --------------- |
-| Zero-shot | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
-| Few-shot (k=8) | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Setup | Overall | PER | ORG | LOC | Malformed / 864 | Truncated | Unaligned spans |
+| ----- | ------- | --- | --- | --- | --------------- | --------- | --------------- |
+| Zero-shot | **0.6328** | 0.6397 | 0.5644 | 0.6812 | 11 (1.27%) | 6 | 32 |
+| Few-shot (k=8) | **0.6643** | 0.6714 | 0.5956 | 0.7190 | 5 (0.58%) | 5 | 31 |
+| MuRIL handoff (Phase 3, seed 42) | 0.8274 | 0.8879 | 0.7444 | 0.8224 | n/a | n/a | n/a |
+| BiLSTM-CRF (Phase 2) | 0.8038 | 0.8692 | 0.7130 | 0.7933 | n/a | n/a | n/a |
+| IndicBERT (Phase 3) | 0.7839 | 0.8538 | 0.6968 | 0.7692 | n/a | n/a | n/a |
 
-For context, from [results.csv](../../results/results.csv): BiLSTM-CRF 0.8038, MuRIL handoff 0.8274, IndicBERT 0.7839, all on the same 864 gold sentences.
+Malformed counts: zero-shot malformed: 11, few-shot malformed: 5. Both rows are in [results.csv](../../results/results.csv) with their full setup in `notes`. Phase 4 numbers are not used here.
+
+## Findings
+
+- **The LLM trails every fine-tuned model,** as expected. Few-shot (0.6643) is 0.163 F1 below MuRIL, 0.140 below the BiLSTM-CRF baseline and 0.120 below IndicBERT. That gap is the finding of this stage.
+- **Examples help: +0.0315 overall** (0.6328 to 0.6643), with gains on all three types (PER +0.032, ORG +0.031, LOC +0.038). This is indicative only: it comes from one model, one prompt and one greedy run, so no spread was measured.
+- **ORG is the weakest type** for the LLM too (0.5956 few-shot), as for every other model. Against MuRIL the gap is largest on PER (−0.217), then ORG (−0.149) and LOC (−0.103).
+- **Format drift is small.** 11 and 5 malformed outputs; every one was an answer cut off at the 320-token limit (broken JSON), scored as all `O`. No output was wrapped in prose or fences. 32 and 31 spans did not match the sentence (altered spelling, an added word, stray characters) and were lost.
+- **Where it fails** ([error_analysis.md](error_analysis.md)): about twice MuRIL's errors (1,003 vs 480). Boundary errors are mostly over-long spans (a role or title attached to a name; 276 of 317 are longer than gold); false alarms are generic words (`देश`, `प्रदेश`, `राष्ट्रपति`, `पुलिस`); LOC is often read as ORG, which MuRIL also does, so part of that is gold conventions.
 
 ## Validation-stage findings (model choice, prompt tuning, speed, VRAM)
 
@@ -82,9 +93,17 @@ Selection rule, written before any run: among candidates whose few-shot malforme
 - One prompt and one model are frozen per final run; the prompt was tuned only on the validation sample, never on gold.
 - Few-shot examples carry silver labels, so they may teach some label noise.
 - Greedy decoding, one run: no seed-to-seed spread is available for the LLM.
-- Small differences between zero-shot and few-shot (about a point of F1) are within what 864 sentences can distinguish; large gaps are not.
+- The zero-shot to few-shot gain (+0.03) has no measured spread. The 0.12 to 0.16 gaps to the fine-tuned models are far larger than that and than the 0.01 differences seen between prompt versions on validation.
+- Every malformed output was an answer cut off at 320 tokens; a larger limit was not tested and might recover some of them.
 - The comparison rows come from different training regimes (the LLM is not trained), so the gap says how far prompting is from fine-tuning, not which model is "better".
 
 ## Gate
 
-**Not yet run on real results.** `uv run python scripts/phase5_gate.py` checks the parser tests, both rows (all 864 sentences, pinned revision, malformed counted, notes complete), one clean notebook execution of one commit, that the saved predictions re-score to the logged F1, and that these docs and the roadmap report the same numbers. The gate was exercised on a synthetic fixture (passes on consistent data; fails when a logged F1 is edited, when a malformed sentence is not all `O`, and when `test_n` is not 864).
+**Passed.** `uv run python scripts/phase5_gate.py` checks the 31 parser tests, both rows (all 864 sentences, pinned revision, malformed counted, notes complete), one clean notebook execution of one commit (every cell ran once in order, no errors, printed rows equal the logged rows), that the saved predictions re-score to the logged F1 with every malformed sentence all `O`, and that these docs and the roadmap report the same numbers. Before the real run it was exercised on a synthetic fixture: it passed on consistent data and failed when a logged F1 was edited, when a malformed sentence was not all `O`, and when `test_n` was not 864.
+
+## Artifacts
+
+- **Notebook:** [phase5-llm-prompting.ipynb](../../notebooks/phase5-llm-prompting.ipynb), the executed Kaggle version, committed unchanged.
+- **Per-sentence results:** [final_predictions.jsonl](../../results/phase5/final_predictions.jsonl) (raw model output, parse flags and tags for all three systems, 864 sentences each) and [final_errors.csv](../../results/phase5/final_errors.csv).
+- **Model:** [Qwen/Qwen2.5-7B-Instruct @ a09a354](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct/tree/a09a35458c702b33eeacc393d103063234e8bc28), Apache-2.0, not gated.
+- **Earlier draft:** a first 200-sentence gold-test draft with a 3B model was retired before this run. It was unpinned and untraceable, and none of its numbers appear anywhere.

@@ -8,8 +8,8 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | gate passed |
-| 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
-| 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | not started |
+| 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | gate passed |
+| 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | in progress |
 
 Status legend: not started, in progress, gate passed, blocked
 
@@ -83,6 +83,10 @@ Run both **zero-shot** and **few-shot** (a handful of in-context examples) promp
 Then Ranjeet Kumar Yadav and the lead jointly do error analysis across stages: where do the models fail (ORG spans? Bengali script tokens? LLM format drift?).
 
 **Gate:** LLM entity-F1 (zero-shot and few-shot) in the sheet with the model name and sample size recorded; one page of concrete error examples.
+
+Check it with `uv run python scripts/phase5_gate.py`. It confirms the parser tests, that both rows come from one clean notebook execution on all 864 gold sentences with a pinned model revision, that malformed output was counted, that the saved predictions re-score to the logged F1, and that the docs agree.
+
+**Result:** Qwen2.5-7B-Instruct (4-bit, prompt v2) scores Hindi gold entity F1 **0.6328** zero-shot and **0.6643** few-shot (k=8), against 0.8274 for MuRIL. 11 and 5 outputs were malformed (all cut off at the token limit) and were scored as errors. ORG is the weakest type (0.5956 few-shot). Details in [phase5/README.md](phase5/README.md) and [phase5/error_analysis.md](phase5/error_analysis.md).
 
 ## Phase 6: Writeup + plots (Ranjeet Kumar Yadav leads, all contribute)
 
