@@ -9,7 +9,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
 | 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | gate passed |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | gate passed |
-| 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | in progress |
+| 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | gate passed |
 
 Status legend: not started, in progress, gate passed, blocked
 
@@ -95,3 +95,7 @@ Check it with `uv run python scripts/phase5_gate.py`. It confirms the parser tes
 - The script-vs-family discussion (the research angle).
 
 **Gate:** report done; every number in it traceable to a logged run.
+
+Check it with `uv run python scripts/phase6_gate.py`. It recomputes the report's numbers from `results/results.csv`, `results/error_analysis/` and the saved predictions, checks that the report states them, and checks that no placeholder is left and every link and figure exists. Figures 3 and 4 are drawn by `scripts/phase6_figures.py` from the logged results.
+
+**Status:** the report is in [phase6/report.md](phase6/report.md) and the gate passes.
