@@ -102,7 +102,8 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 - **LLM few-shot:** about twice MuRIL's errors (1,003). Boundary errors are over-long spans (276 of 317 longer than gold: a role or title attached to a name). False alarms are generic words (`देश`, `प्रदेश`, `राष्ट्रपति`, `पुलिस`). Misses include plain place names. Examples cut spurious spans and misses by 72 each and add 24 boundary errors.
 - **Shared with MuRIL:** gold LOC predicted as ORG is the largest type confusion for both (LOC as ORG: 21 LLM, 15 MuRIL), which points to gold conventions as part of the ceiling.
 - **Format drift** is small: 11 and 5 malformed outputs, plus about 30 spans per mode that do not match the sentence (altered spelling, an added word, stray characters).
-- **Cross-language errors (Marathi, Bengali)** were not analysed at the span level in this project; only per-type F1 and gaps are available (Section 5).
+- **Across all Hindi stages:** MuRIL makes the fewest errors (480), then BiLSTM-CRF (551), IndicBERT (600), LLM few-shot (1,003), and LLM zero-shot (1,122). MuRIL's gain over BiLSTM-CRF is recall (77 vs 197 missed), although it makes more spurious predictions (205 vs 148). Of 1,929 gold entities, 1,023 are right in all four compared systems and 121 are wrong in all four, including 54 ORG entities.
+- **Marathi and Bengali:** across three seeds, Marathi in-language models miss about 46 more entities than Hindi models and make about 12 fewer spurious predictions. Bengali in-language models miss about 12 fewer entities than Hindi models. Both patterns have the same sign on all three seeds.
 
 ## 8. Script versus language family
 
@@ -110,7 +111,8 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 
 **What the data do not show.**
 - This does not prove that script is the cause. There are only two target languages, and each has a different gold test set (1,060 and 607 sentences), so absolute F1 cannot be compared across them.
-- Marathi's in-language baseline is weak (0.8163), and nothing here explains why. Differences in silver-label quality are one untested possibility.
+- The span-level analysis shows how Marathi's in-language baseline (0.8163) falls behind: lower recall, with about 46 more missed entities than the Hindi models. It does not show why. Differences in silver-label quality are one untested possibility.
+- Tokenizer coverage does not appear to explain Bengali errors. Only 0.046% of Bengali words contain `[UNK]`, and Bengali needs about as many MuRIL subwords per word as Marathi (1.305 vs 1.315).
 - The seeds measure training variation, not test-set sampling variation, and they also change the sampled training subset.
 - Bengali still reaches 0.8037 without a single Bengali training sentence, within about 0.01 of its in-language baseline, so a different script does not stop MuRIL's shared subword space from transferring.
 
@@ -136,4 +138,5 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 | LLM 0.6328 and 0.6643, per-type, malformed 11 and 5 | `results.csv`, rows `LLM-zero-shot` and `LLM-few-shot`, commit `f1d8cbd` |
 | LLM error counts, example spans, MuRIL error counts | [final_errors.csv](../../results/phase5/final_errors.csv) and [final_predictions.jsonl](../../results/phase5/final_predictions.jsonl) |
 | Parser ceiling 0.9984 | `scripts/phase5_parser.py` on the Hindi gold test set (documented in [phase5/README.md](../phase5/README.md)) |
+| Cross-stage and cross-language error counts, consistent wins, tokenizer and script statistics | [results/error_analysis/](../../results/error_analysis/), from [phase5-cross-stage-errors.ipynb](../../notebooks/phase5-cross-stage-errors.ipynb), commit `a53f15e` |
 | Validation-sample numbers (model choice, prompt rounds) | [phase5/README.md](../phase5/README.md), from the two validation Kaggle runs (silver labels; not comparable with gold) |

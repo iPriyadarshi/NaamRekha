@@ -86,7 +86,7 @@ Then Ranjeet Kumar Yadav and the lead jointly do error analysis across stages: w
 
 Check it with `uv run python scripts/phase5_gate.py`. It confirms the parser tests, that both rows come from one clean notebook execution on all 864 gold sentences with a pinned model revision, that malformed output was counted, that the saved predictions re-score to the logged F1, and that the docs agree.
 
-**Result:** Qwen2.5-7B-Instruct (4-bit, prompt v2) scores Hindi gold entity F1 **0.6328** zero-shot and **0.6643** few-shot (k=8), against 0.8274 for MuRIL. 11 and 5 outputs were malformed and were scored as errors (six zero-shot and all five few-shot answers were cut off at the token limit; five zero-shot answers were short with broken JSON). ORG is the weakest type (0.5956 few-shot). Details in [phase5/README.md](phase5/README.md) and [phase5/error_analysis.md](phase5/error_analysis.md).
+**Result:** Qwen2.5-7B-Instruct (4-bit, prompt v2) scores Hindi gold entity F1 **0.6328** zero-shot and **0.6643** few-shot (k=8), against 0.8274 for MuRIL. 11 and 5 outputs were malformed and were scored as errors (six zero-shot and all five few-shot answers were cut off at the token limit; five zero-shot answers were short with broken JSON). ORG is the weakest type (0.5956 few-shot). The cross-stage analysis finds that MuRIL's main gain over BiLSTM-CRF is recall, Marathi in-language models miss about 46 more entities than Hindi models, and tokenizer coverage does not appear to explain Bengali errors. Details in [phase5/README.md](phase5/README.md) and [phase5/error_analysis.md](phase5/error_analysis.md).
 
 ## Phase 6: Writeup + plots (Ranjeet Kumar Yadav leads, all contribute)
 
