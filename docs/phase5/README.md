@@ -16,7 +16,7 @@ The job of this phase: prompt a self-hosted open LLM (loaded in the notebook, no
   | `qwen2.5-7b-4bit` | `Qwen/Qwen2.5-7B-Instruct` @ `a09a35458c702b33eeacc393d103063234e8bc28` | 4-bit nf4 | Apache-2.0 | no |
 
   License, gating and revisions were read from the Hugging Face Hub. Airavata (Llama 2 license, gated), Aya Expanse 8B (CC-BY-NC, gated) and Navarasa (Gemma terms) were left out so the run needs no access approvals. The 3B model's `qwen-research` license limits it to research use, which fits a course project but is worth stating in the report.
-- **Decoding:** greedy, batch size 8, `max_new_tokens=320`. A truncated answer has no closing bracket, so it counts as malformed.
+- **Decoding:** greedy, batch size 8, `max_new_tokens=320`. An answer cut off at the limit is counted as `truncated`; it is malformed only if its JSON is incomplete (in validation, 1 zero-shot answer was truncated yet still parsed).
 - **Answer format** (same in both modes): `[{"text": "<entity as written>", "type": "PER|ORG|LOC"}]`, `[]` when there are no entities.
 - **Few-shot:** 8 fixed, hand-checked examples (7 entity-rich, 1 with no entities) from the Hindi **val** split (`SHOT_VAL_IDX` in the notebook). They sit outside the 150 validation sentences reserved for tuning, share no text with the gold test set, and cover PER, ORG and LOC. Their labels are silver, a limitation.
 - **Scoring:** the shared `src.evaluate` (seqeval entity-level micro-F1, overall and per type). Final stage: **all 864** Hindi gold sentences, the same set as every other stage.
@@ -73,7 +73,7 @@ Both few-shot malformed rates (1.3%) met the 5% limit, and the 7B model's few-sh
 
 v2 did not change overall F1 (0.5545 to 0.5523, within noise on 150 sentences). PER rose by about 0.03 and malformed and truncated outputs went to zero. ORG stayed near 0.33, below zero-shot ORG (0.394), in both rounds. Parser ceiling on this sample: 0.9853.
 
-**Decision (frozen before any gold run):** model `qwen2.5-7b-4bit`, prompt `v2`, `FINAL_MODEL` set in the notebook. Tuning stopped here because further changes on a noisy silver sample risk fitting its noise. The final run needs about 1.9 hours (37 + 75 minutes) and 11.9 GB VRAM, which fits one Kaggle session. `PROMPT_HASH` for v2: **PENDING (copy from the notebook log line `prompt v2/...`)**.
+**Decision (frozen before any gold run):** model `qwen2.5-7b-4bit`, prompt `v2`, `FINAL_MODEL` set in the notebook. Tuning stopped here because further changes on a noisy silver sample risk fitting its noise. The final run needs about 1.9 hours (37 + 75 minutes) and 11.9 GB VRAM, which fits one Kaggle session. Prompt `v2/85343238`; parser hash `ffb1d6e7` (from the Kaggle clone) in the validation log.
 
 Selection rule, written before any run: among candidates whose few-shot malformed rate is at most 5%, take the highest few-shot validation F1; if several are within 0.01 F1 of the best, take the faster one.
 

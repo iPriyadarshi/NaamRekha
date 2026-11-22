@@ -25,14 +25,55 @@ Computed locally from the public checkpoint `priyadarshi-su/naamrekha-muril_hi_n
 - **Type confusion is mainly LOC and ORG:** gold LOC predicted ORG 15 times, gold ORG predicted LOC 5 times. Examples of gold ORG predicted LOC: `सिंदरी`, `मुतंगी मस्जिद`, `नेहरू विज्ञान केंद्र`, `आस्था विद्या मंदिर`.
 - **Some gold labels look odd,** so part of the ceiling is annotation, not modelling: gold ORG for `दिल्ली` and for `अन्ना`, gold ORG for `वाजपेयी`. These are reported, not corrected.
 
-## 2. LLM zero-shot and few-shot (validation sample, then gold)
+## 2. LLM zero-shot and few-shot
 
-**PENDING.** To fill from the notebook's saved outputs, with gold **and** predicted span for every example:
+**2a. Validation sample (preliminary).** Qwen2.5-7B-Instruct (4-bit), prompt v2, 150 Hindi **val** sentences with **silver** labels, with MuRIL on the same sentences. These counts guide the analysis; the report uses the final gold-run counts (**PENDING**).
 
-- error counts by kind and type, for zero-shot, few-shot and MuRIL side by side;
-- ORG first: false alarms (generic or organisation-sounding words), boundary errors around titles and suffixes, missed acronyms;
-- sentences MuRIL gets exactly right and the LLM does not, and the reverse.
+| System | Boundary | Missed | Spurious | Type confusion | Total |
+| ------ | -------- | ------ | -------- | -------------- | ----- |
+| LLM zero-shot | 62 | 70 | 98 | 8 | 238 |
+| LLM few-shot | 87 | 43 | 62 | 15 | 207 |
+| MuRIL | 42 | 17 | 33 | 9 | 101 |
+
+ORG per kind (boundary / missed / spurious / type confusion): few-shot 39 / 27 / 25 / 10, zero-shot 20 / 45 / 32 / 4, MuRIL 22 / 9 / 15 / 6. PER few-shot: 28 / 8 / 16 / 2. LOC few-shot: 20 / 8 / 21 / 3.
+
+- **Examples change the kind of error.** Few-shot cuts spurious spans (98 to 62) and misses (70 to 43), but boundary errors rise (62 to 87): the model finds more real entities and places their edges less well.
+- **The LLM makes about twice MuRIL's errors** in every kind except type confusion.
+- **ORG is about half of all errors** for both systems (few-shot 101 of 207; MuRIL 52 of 101). Examples cut ORG misses (45 to 27) and double ORG boundary errors (20 to 39).
+
+**2b. Concrete examples (same validation run; LLM few-shot, MuRIL where noted).** Gold is silver here, so each example is marked as a likely **model error** or a likely **label quirk**. They come from the first rows of the notebook's error tables, not a random sample; the gold-run examples replace them.
+
+| Kind | Gold | LLM predicted | Reading |
+| ---- | ---- | ------------- | ------- |
+| spurious | none | ORG `बिजली कंपनियों`, ORG `रिपोर्ट`, ORG `सीएनजी` | **Model error:** generic nouns and a fuel tagged as organisations. |
+| spurious | none | PER `राष्ट्रपति`, PER `सलामी` | **Model error:** a title and the word "opening (batsman)" tagged as persons. |
+| type confusion | ORG `बसपा`, ORG `तेदेपा`, ORG `लोकसभा` | LOC for each | **Model error:** party acronyms and the Lok Sabha tagged as places (also acronyms the model misses entirely). |
+| boundary | ORG `रेलवे भर्ती बोर्ड` and ORG `RRB` (two entities) | one ORG `रेलवे भर्ती बोर्ड ( RRB )` | Merges name and acronym; gold splits them. |
+| boundary | ORG `वैश्विक मंच` and ORG `सचिवालय` | one ORG `वैश्विक मंच के सचिवालय` | Merges two entities into one span (MuRIL makes the same kind of merge: `सीपीआई एमएल लिबरेशन` vs gold `सीपीआई` and `एमएल`). |
+| boundary | PER `रामनाथ कोविंद` | PER `राष्ट्रपति रामनाथ कोविंद` | Title included in the name span. |
+| missed | ORG `संस्थान`, ORG `राष्ट्रीय महत्व के संस्थान` | nothing | Generic institution phrases; also missed LOC `मसूर`, `अंगलियात`, `राज्यों`, PER `पद्मावती`. |
+| type confusion | ORG `तिरुवनंतपुरम`, ORG `मध्यप्रदेश` | LOC for each | **Label quirk:** gold calls cities and states ORG; MuRIL predicts LOC for the same two. |
+| boundary / missed | ORG spans running through a whole clause, e.g. `मानव संसाधन विकास मंत्रालय ने छात्रों , शिक्षक...` | `मानव संसाधन विकास मंत्रालय` | **Label quirk:** the gold span is silver noise; both the LLM and MuRIL predict the sensible short span. |
+| spurious / type | LOC `व्हाइट हाउस` | ORG `व्हाइट हाउस` | Arguable: the model's reading (an institution) is defensible. |
+
+Takeaways: (1) the LLM's real ORG failures are false alarms on generic words, acronyms read as places, and merged or over-long spans; (2) a visible share of the "errors" on both systems come from silver gold labels, so the gold test set must be used for the report numbers; (3) MuRIL fails on the same noisy labels, which suggests those are annotation noise, not LLM weakness.
+- Still to fill from the final gold run: the same table on 864 gold sentences, sentences MuRIL gets exactly right and the LLM does not (and the reverse).
 
 ## 3. LLM format drift
 
-**PENDING.** To fill: malformed count and reasons per mode (`empty`, `no_json`, `broken_json`, `bad_shape`), truncated outputs, answers wrapped in prose or fences, unknown labels, and the most common unaligned spans (text the model wrote that is not in the sentence, which shows translation or rewriting). Each shown with the raw output.
+**Validation sample (Qwen2.5-7B, prompt v2, 150 sentences).** Format drift is not the problem for this model with this prompt: 0 malformed outputs in both modes, no answers wrapped in prose or fences, no invalid items, no unknown labels. One zero-shot answer hit the 320-token limit yet still parsed. The drift that does exist is **the model not copying the sentence exactly** (unaligned spans: 6 zero-shot, 8 few-shot; overlap-dropped 1 and 3). The unaligned spans the model wrote that are not in the sentence:
+
+- **Altered spelling or dropped letters:** `सप्रीम कोर्ट` (for `सुप्रीम कोर्ट`), `अंगियात` (gold `अंगलियात`), `मसू` (gold `मसूर`), `सिद्धारथ दोहरी` (twice), `भारतीय बास्केट...` (cut short).
+- **Names rewritten into Latin script:** `bihar`, `chapra`, `saran`. The instruction said "same script, no translation", and few-shot still did this three times.
+- **Wrong or invented entities:** `राहुल जिन्ना`, `न्यॉर्क`, and a long run-on `मज़दूर - किसान - छोटा व्यापारी भारत`.
+
+These count as lost entities (the span matches nothing), so they hurt recall without being counted as malformed. The final gold run will report malformed, truncated, noisy, invalid, unknown-label and unaligned counts per mode from `results/phase5/`.
+
+**MuRIL versus LLM, whole-sentence view (150 validation sentences).** Sentences with every entity exactly right:
+
+| | Both exact | MuRIL only | LLM only | Neither |
+| --- | --- | --- | --- | --- |
+| LLM zero-shot | 38 | 47 | 7 | 58 |
+| LLM few-shot | 42 | 43 | 7 | 58 |
+
+MuRIL is exactly right on a sentence where the LLM is not about six times as often as the reverse (43 vs 7 for few-shot). Gold-run version: **PENDING**.
