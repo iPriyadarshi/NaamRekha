@@ -7,7 +7,7 @@ Work proceeds as an ordered sequence of phases. Each phase ends at a **gate**. D
 | 1     | Shared infra (loader + eval + results sheet) | Priyadarshi Kumar (Lead)             | gate passed |
 | 2     | BiLSTM-CRF baseline (Hindi)                  | Sajan Kumar                          | gate passed |
 | 3     | MuRIL + IndicBERT fine-tuning (Hindi)        | Shreyank Sthavaramath                | gate passed |
-| 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | not started |
+| 4     | Cross-lingual transfer matrix                | Priyadarshi Kumar (Lead)             | gate passed |
 | 5     | LLM prompting + error analysis               | Ranjeet Kumar Yadav                  | not started |
 | 6     | Writeup + plots                              | Ranjeet Kumar Yadav (all contribute) | not started |
 
@@ -64,6 +64,10 @@ Take Shreyank Sthavaramath's best Hindi MuRIL checkpoint:
 2. Fine-tune MuRIL **in-language** on `mr` and `bn` to establish the upper bound / transfer gap.
 
 **Gate:** transfer matrix filled (train `hi`, then test `hi`/`mr`/`bn`) **plus** in-language upper bounds for `mr` and `bn`.
+
+Check it with `uv run python scripts/phase4_gate.py`. It confirms all 15 rows (five matrix cells on three seeds) come from one clean notebook execution, use the pinned Phase 3 checkpoints and recipe, and are reported in the docs.
+
+**Result:** across three seeds, the Hindi model scores mean zero-shot gold F1 **0.8332** on Marathi and **0.8037** on Bengali. In-language baselines score 0.8163 and 0.8132. Hindi beats the Marathi baseline on all three seeds (mean gap −0.0169), so that run is not a true upper bound, while the Bengali baseline beats Hindi on all three seeds (mean gap +0.0095). The pattern fits the shared-script idea but does not isolate script as the cause. Details in [phase4/README.md](phase4/README.md).
 
 ## Phase 5: LLM prompting + error analysis (Ranjeet Kumar Yadav)
 

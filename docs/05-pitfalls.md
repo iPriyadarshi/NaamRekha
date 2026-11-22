@@ -47,3 +47,5 @@ BERT-family tokenizers split a word into multiple wordpieces, but we have **one 
 - **Standalone `▁` in IndicBERT.** About 2.9% of sampled Hindi words start with a bare `▁` piece. Labeling it puts the tag on a piece with no text. Use the notebook's `label_positions` helper.
 - **Kaggle has its own `/kaggle/src`.** Checking for `../src` makes a notebook think `/kaggle` is the repo. Check for a real repo file such as `src/data.py`.
 - **Upload before deleting checkpoints.** Clearing Kaggle disk before saving a model elsewhere makes its result impossible to reload or verify. Upload, confirm, log the pinned link, then delete.
+- **An in-language run is not automatically an upper bound.** In Phase 4, Hindi models beat Marathi-trained models on Marathi gold on all three seeds (mean 0.8332 vs 0.8163). Check the result across seeds before interpreting a small transfer gap.
+- **The fp16 training object scores differently from a reloaded model.** `Trainer` leaves an autocast wrapper on `model.forward`, so scoring it right after training uses fp16, while a reloaded model uses 32-bit. A near-tied prediction can flip. Save, reload, then score when comparing models.
