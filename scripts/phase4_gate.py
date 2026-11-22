@@ -1,11 +1,11 @@
 """Phase 4 gate check. Uses only the shared code in src/ and committed files.
 
 Gate (docs/01-roadmap.md): the transfer matrix is filled (MuRIL trained on hi,
-tested on hi/mr/bn) plus in-language upper bounds for mr and bn.
+tested on hi/mr/bn) plus in-language runs for mr and bn.
 
-This script checks that those rows come from one clean execution of the Phase 4
-notebook, use the pinned Phase 3 checkpoint and recipe, and are reported in the
-docs. It does not retrain or re-score any model.
+This script checks that those rows exist for all three seeds, come from one
+clean execution of the Phase 4 notebook, use the pinned Phase 3 checkpoints and
+recipe, and are reported in the docs. It does not retrain or re-score any model.
 
 Run from the repo root:  uv run python scripts/phase4_gate.py
 """
@@ -18,6 +18,7 @@ import os
 import re
 import sys
 from collections import Counter
+from statistics import mean, stdev
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
@@ -31,9 +32,15 @@ NOTEBOOK = os.path.join(REPO_ROOT, "notebooks", "phase4-transfer.ipynb")
 PHASE_DOC = os.path.join(REPO_ROOT, "docs", "phase4", "README.md")
 SCORE_COLS = ["F1_PER", "F1_ORG", "F1_LOC", "F1_overall"]
 REQUIRED = [(SOURCE, SOURCE), *[(SOURCE, t) for t in TARGETS], *[(t, t) for t in TARGETS]]
-HI_URL = ("https://huggingface.co/priyadarshi-su/naamrekha-muril_hi_n300000_e3_lr2e-05_s42_bfd254ed"
-          "/tree/de5204680ed4a8ab1ac842847df6866a6e2c9251")
-HI_GOLD_F1 = 0.8274137068534269
+HI_MODELS = {
+    "42": ("priyadarshi-su/naamrekha-muril_hi_n300000_e3_lr2e-05_s42_bfd254ed",
+           "de5204680ed4a8ab1ac842847df6866a6e2c9251", 0.8274137068534269),
+    "43": ("priyadarshi-su/naamrekha-muril_hi_n300000_e3_lr2e-05_s43_223b5780",
+           "f15d615b7d760d23af6c5aa111675f0d6be39c3d", 0.824173091270828),
+    "44": ("priyadarshi-su/naamrekha-muril_hi_n300000_e3_lr2e-05_s44_618532f6",
+           "aa2f28136b49859a460217190b85ebedfc625e32", 0.8174346201743462),
+}
+SEEDS = list(HI_MODELS)
 SUBSET_SIZE = "300000"
 EPOCHS = "3"
 CHECKPOINT_URL = re.compile(r"https://huggingface\.co/[^/\s]+/[^/\s]+/tree/[0-9a-f]{40}")
@@ -69,26 +76,33 @@ def main() -> None:
     check(header == COLUMNS, "header matches the fixed columns")
     phase4 = [r for r in rows if r["model"] == MODEL and "phase=4" in r["notes"]]
     check(not any("DEBUG" in r["notes"] for r in phase4), "no DEBUG rows committed")
+    check(len(phase4) == len(REQUIRED) * len(SEEDS), f"{len(REQUIRED) * len(SEEDS)} Phase 4 rows logged ({len(phase4)} found)")
 
-    print("\n2. Transfer matrix + in-language upper bounds")
-    cells: dict[tuple[str, str], dict[str, str]] = {}
-    for train, test in REQUIRED:
-        found = [r for r in phase4 if r["train_lang"] == train and r["test_lang"] == test]
-        check(len(found) == 1, f"exactly one {MODEL} {train}->{test} row logged ({len(found)} found)")
-        r = found[0]
-        for c in SCORE_COLS:
-            check(0.0 < float(r[c]) <= 1.0, f"{train}->{test} {c} = {float(r[c]):.4f} is a valid entity F1")
-        check(r["subset_size"] == SUBSET_SIZE and r["epochs"] == EPOCHS, f"{train}->{test} uses n=300,000 and 3 epochs")
-        check(bool(CHECKPOINT_URL.fullmatch(r["checkpoint_path"])), f"{train}->{test} checkpoint_path is a pinned Hugging Face link")
-        if train == SOURCE:
-            check(r["checkpoint_path"] == HI_URL, f"{train}->{test} uses the pinned Phase 3 checkpoint")
-        else:
-            notes = parse_notes(r["notes"])
-            check(notes.get("gpus") == "1" and notes.get("effective_bs") == "32" and int(notes.get("warmup_steps", 0)) > 0,
-                  f"{train}->{test} used one GPU, effective batch 32, and warmup")
-        cells[(train, test)] = r
-    check(abs(float(cells[(SOURCE, SOURCE)]["F1_overall"]) - HI_GOLD_F1) <= 1e-4,
-          f"hi->hi reproduces the Phase 3 score {HI_GOLD_F1:.4f}")
+    print("\n2. Transfer matrix + in-language runs, per seed")
+    cells: dict[tuple[str, str, str], dict[str, str]] = {}
+    for seed in SEEDS:
+        for train, test in REQUIRED:
+            name = f"seed {seed} {train}->{test}"
+            found = [r for r in phase4 if r["train_lang"] == train and r["test_lang"] == test
+                     and parse_notes(r["notes"]).get("seed") == seed]
+            check(len(found) == 1, f"exactly one {name} row logged ({len(found)} found)")
+            r = found[0]
+            for c in SCORE_COLS:
+                check(0.0 < float(r[c]) <= 1.0, f"{name} {c} = {float(r[c]):.4f} is a valid entity F1")
+            check(r["subset_size"] == SUBSET_SIZE and r["epochs"] == EPOCHS, f"{name} uses n=300,000 and 3 epochs")
+            check(bool(CHECKPOINT_URL.fullmatch(r["checkpoint_path"])), f"{name} checkpoint_path is a pinned Hugging Face link")
+            if train == SOURCE:
+                repo, revision, _ = HI_MODELS[seed]
+                check(r["checkpoint_path"] == f"https://huggingface.co/{repo}/tree/{revision}",
+                      f"{name} uses that seed's pinned Phase 3 checkpoint")
+            else:
+                notes = parse_notes(r["notes"])
+                check(notes.get("gpus") == "1" and notes.get("effective_bs") == "32" and int(notes.get("warmup_steps", 0)) > 0,
+                      f"{name} used one GPU, effective batch 32, and warmup")
+            cells[(seed, train, test)] = r
+        expected = HI_MODELS[seed][2]
+        check(abs(float(cells[(seed, SOURCE, SOURCE)]["F1_overall"]) - expected) <= 1e-4,
+              f"seed {seed} hi->hi reproduces the Phase 3 score {expected:.4f}")
     commits = {parse_notes(r["notes"]).get("git") for r in phase4}
     check(len(commits) == 1 and None not in commits, f"all Phase 4 rows come from one code commit ({sorted(map(str, commits))})")
 
@@ -105,14 +119,15 @@ def main() -> None:
     check(os.path.exists(PHASE_DOC), f"{os.path.relpath(PHASE_DOC, REPO_ROOT)} exists")
     with open(PHASE_DOC, encoding="utf-8") as f:
         doc = f.read()
-    for (train, test), r in cells.items():
-        f1 = f"{float(r['F1_overall']):.4f}"
-        check(f1 in doc, f"doc reports {train}->{test} F1 {f1}")
+    for train, test in REQUIRED:
+        f1 = f"{mean(float(cells[(s, train, test)]['F1_overall']) for s in SEEDS):.4f}"
+        check(f1 in doc, f"doc reports {train}->{test} mean F1 {f1}")
 
-    print("\n  transfer gap (in-language - zero-shot, F1_overall):")
+    print("\n  transfer gap (in-language - zero-shot, F1_overall), paired by seed:")
     for t in TARGETS:
-        gap = float(cells[(t, t)]["F1_overall"]) - float(cells[(SOURCE, t)]["F1_overall"])
-        print(f"    {SOURCE} -> {t}: {gap:+.4f}")
+        gaps = [float(cells[(s, t, t)]["F1_overall"]) - float(cells[(s, SOURCE, t)]["F1_overall"]) for s in SEEDS]
+        per_seed = ", ".join(f"{s}: {g:+.4f}" for s, g in zip(SEEDS, gaps))
+        print(f"    {SOURCE} -> {t}: mean {mean(gaps):+.4f}, sd {stdev(gaps):.4f} ({per_seed})")
     print("\nPhase 4 gate: PASSED")
 
 
