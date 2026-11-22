@@ -16,6 +16,7 @@ Run from the repo root:  uv run python scripts/phase5_gate.py
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import os
 import re
@@ -26,7 +27,8 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 
-from src import COLUMNS, RESULTS_PATH, evaluate  # noqa: E402
+from phase5_parser import parse_llm_output  # noqa: E402
+from src import COLUMNS, RESULTS_PATH, evaluate, load_split  # noqa: E402
 
 LANG = "hi"
 FULL_TEST = 864
@@ -141,12 +143,22 @@ def main() -> None:
         for line in f:
             rec = json.loads(line)
             recs.setdefault(rec["system"], []).append(rec)
+    # The committed parser must be the one that produced the logged rows (hash taken on LF line endings,
+    # because the Kaggle run read the file from a Linux clone).
+    with open(os.path.join(REPO_ROOT, "scripts", "phase5_parser.py"), "rb") as f:
+        parser_sha = hashlib.sha1(f.read().replace(b"\r\n", b"\n")).hexdigest()[:8]
+    check(parser_sha == z["parser"], f"committed parser matches the logged hash ({parser_sha})")
+    test_rows = load_split(LANG, "test")           # the real gold test split, from the shared loader
     for mode, r in by_mode.items():
         system = next((s for s in recs if s.startswith(f"LLM {mode} [")), None)
         check(system is not None, f"{mode}: predictions saved")
         rs = sorted(recs[system], key=lambda x: x["idx"])
         check(len(rs) == FULL_TEST, f"{mode}: {len(rs)} sentences saved")
         check(all(len(x["pred"]) == len(x["gold"]) == len(x["words"]) for x in rs), f"{mode}: one tag per word everywhere")
+        check(len(rs) == len(test_rows) and all(x["words"] == w and x["gold"] == tg for x, (w, tg) in zip(rs, test_rows)),
+              f"{mode}: saved words and gold match the real test split")
+        check(all(parse_llm_output(x["raw"], x["words"]).tags == x["pred"] for x in rs),
+              f"{mode}: raw outputs re-parse to the saved predictions")
         scores = evaluate([x["gold"] for x in rs], [x["pred"] for x in rs])
         for c in SCORE_COLS:
             check(abs(scores[c] - float(r[c])) < 1e-9, f"{mode}: re-scored {c} = {scores[c]:.4f} matches the sheet")

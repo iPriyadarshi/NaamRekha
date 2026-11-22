@@ -51,6 +51,6 @@ Spurious ORG (94) is MuRIL's largest cell, then boundary ORG (64). Examples: `�
 
 ## 4. LLM format drift
 
-- **Malformed: 11 of 864 zero-shot (1.27%), 5 of 864 few-shot (0.58%).** Every one was an answer cut off at the 320-token limit, giving broken JSON; each was scored as all `O` and counted. A larger limit might recover some of them; that was not tested.
+- **Malformed: 11 of 864 zero-shot (1.27%), 5 of 864 few-shot (0.58%).** Six zero-shot and all five few-shot failures were answers cut off at the 320-token limit. The other five zero-shot failures were short answers with broken JSON, so a larger token limit would not fix them. Each was scored as all `O` and counted.
 - **No other drift:** 0 answers wrapped in prose or code fences, 0 invalid items, 1 unknown label per mode.
 - **The model does not always copy the sentence.** 32 zero-shot and 31 few-shot spans matched nothing in the sentence and were lost: altered names (`नई दिल्ली` where the sentence has `दिल्ली`, 3 and 2 times; `सलमान कांहन` for `सलमान खान`; `दिनाक भास्कर` and `डेनिक भास्कर` for `दैनिक भास्कर`; `द न्यॉर्क टाइम्स`), a few words with stray characters from other scripts, and in zero-shot two Latin-script fragments (`ERS TIMES`). Few-shot wrote no Latin-script spans on gold (on the validation sample it wrote three place names in Latin).

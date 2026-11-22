@@ -71,14 +71,14 @@ By type, the largest gaps are on ORG (Marathi −0.0364, Bengali +0.0165); Benga
 
 ## 6. Stage 4: LLM prompting
 
-A self-hosted open LLM (no external API) is prompted for PER/ORG/LOC spans as a JSON array, zero-shot and with 8 fixed few-shot examples, and its text output is parsed back into IOB2 by a documented, tested parser. Malformed output is counted as an error (all `O`), never dropped. The model was chosen on a 150-sentence validation sample, not on gold: `Qwen/Qwen2.5-7B-Instruct` in 4-bit (Apache-2.0, revision `a09a354...`) beat the 3B candidate by 0.11 F1, and the prompt (`v2`) was frozen before the gold run. Setup, parser rules and validation rounds are in [phase5/README.md](../phase5/README.md). Scored on all 864 Hindi gold sentences in one clean Kaggle run:
+A self-hosted open LLM (no external API) is prompted for PER/ORG/LOC spans as a JSON array, zero-shot and with 8 fixed few-shot examples, and its text output is parsed back into IOB2 by a documented, tested parser. Malformed output is counted as an error (all `O`), never dropped. The model was chosen on a 150-sentence validation sample, not on gold: `Qwen/Qwen2.5-7B-Instruct` in 4-bit (Apache-2.0, revision `a09a354...`) beat the 3B candidate by 0.11 F1, and the prompt (`v2`) was frozen before the final gold run. Setup, parser rules and validation rounds are in [phase5/README.md](../phase5/README.md). Scored on all 864 Hindi gold sentences in one clean Kaggle run:
 
 | Setup | PER | ORG | LOC | Overall | Malformed / 864 | Source |
 | ----- | --- | --- | --- | ------- | --------------- | ------ |
 | LLM zero-shot | 0.6397 | 0.5644 | 0.6812 | **0.6328** | 11 | `results.csv` |
 | LLM few-shot (k=8) | 0.6714 | 0.5956 | 0.7190 | **0.6643** | 5 | `results.csv` |
 
-Examples help by 0.0315 F1 (indicative: one greedy run). Every malformed output was an answer cut off at the 320-token limit. The parser itself costs under 0.2 F1 points (feeding gold answers through it scores 0.9984).
+Examples help by 0.0315 F1 (indicative: one greedy run). Malformed outputs were 11 of 864 for zero-shot and 5 of 864 for few-shot. Six zero-shot and all five few-shot failures were answers cut off at the 320-token limit. The other five zero-shot failures were short answers with broken JSON, so a larger token limit would not fix them. The parser itself costs under 0.2 F1 points (feeding gold answers through it scores 0.9984).
 
 ## 7. Comparison across stages and error analysis
 
@@ -120,8 +120,7 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 
 - Silver training labels carry noise; the gold test sets are small (864 Hindi sentences), so differences of about a point are within seed variation (MuRIL ranges 0.8174 to 0.8274 across three seeds on Hindi).
 - The BiLSTM-CRF and IndicBERT rows are single-seed and not tuned. The LLM row is one model, one frozen prompt and one greedy run, with no measured spread; the few-shot examples carry silver labels.
-- The prompt and model were chosen on a silver validation sample and frozen before gold was touched; no result was tuned on gold.
-- A first 200-sentence LLM draft was retired because it was unpinned and untraceable; none of its numbers are used.
+- An earlier 200-sentence LLM draft was run on gold test sentences and retired because it was unpinned and untraceable. Its scores are not reported, but the 3B candidate, the "copy each entity exactly as written" instruction wording, the choices of 8 few-shot examples and batch size 8, and the error-sorting code carried over from it, so the final setup may not be fully independent of the gold test set. The final model and prompt were then selected on a silver validation sample, and the gold test set was scored once with everything frozen.
 - Reproducibility: pinned library versions, fixed seeds, pinned Hugging Face revisions for every checkpoint and for the LLM, and a gate script for each of Phases 1 to 5 ([scripts/](../../scripts/)) that checks the logged rows, the executed notebooks and the docs.
 - References: Lample et al., *Neural Architectures for Named Entity Recognition*, NAACL 2016 ([arXiv:1603.01360](https://arxiv.org/abs/1603.01360)); Mhaske et al., *Naamapadam*, ACL 2023 ([arXiv:2212.10168](https://arxiv.org/abs/2212.10168)).
 
