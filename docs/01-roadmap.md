@@ -95,3 +95,7 @@ Check it with `uv run python scripts/phase5_gate.py`. It confirms the parser tes
 - The script-vs-family discussion (the research angle).
 
 **Gate:** report done; every number in it traceable to a logged run.
+
+Check it with `uv run python scripts/phase6_gate.py`. It recomputes the report's numbers from `results/results.csv`, `results/error_analysis/` and the saved predictions, checks that the report states them, and checks that no placeholder is left and every link and figure exists. Figures 3 and 4 are drawn by `scripts/phase6_figures.py` from the logged results.
+
+**Status:** a full draft is in [phase6/report.md](phase6/report.md) and the gate passes. This phase is marked passed once the team has read the report.

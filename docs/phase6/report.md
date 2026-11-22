@@ -48,7 +48,9 @@ The roadmap expected the mid-to-high 60s; 0.8038 is well above that. Likely reas
 | MuRIL (mean of seeds 42, 43, 44) | 300,000 | 3 | | | | 0.8230 | Phase 3 rows for seeds 42 to 44 (0.8274, 0.8242, 0.8174) |
 | IndicBERT (untuned, seed 42) | 300,000 | 1 | 0.8538 | 0.6968 | 0.7692 | 0.7839 | `results.csv` |
 
-Findings: MuRIL beats the baseline on every seed (lowest 0.8174 vs 0.8038); the 10k, 3-epoch run collapsed to predicting no entities and recovered with 9 epochs (an under-training effect, not a data limit); gold F1 is flat from 30k upward (0.8230 to 0.8296 across size means), so the choice of 300k rests on validation, not on a clear gold gain; IndicBERT reuses MuRIL's hyperparameters on one seed, so 0.7839 is not its best possible score. **Figure:** the scaling curve is [results/phase3_scaling_curve.png](../../results/phase3_scaling_curve.png).
+Findings: MuRIL beats the baseline on every seed (lowest 0.8174 vs 0.8038); the 10k, 3-epoch run collapsed to predicting no entities and recovered with 9 epochs (an under-training effect, not a data limit); gold F1 is flat from 30k upward (0.8230 to 0.8296 across size means), so the choice of 300k rests on validation, not on a clear gold gain; IndicBERT reuses MuRIL's hyperparameters on one seed, so 0.7839 is not its best possible score. **Figure 1:** the scaling curve is [results/phase3_scaling_curve.png](../../results/phase3_scaling_curve.png).
+
+![Phase 3 scaling curve: Hindi gold F1 against training size for MuRIL, with the chosen 300,000 working size](../../results/phase3_scaling_curve.png)
 
 ## 5. Stage 3: Cross-lingual zero-shot transfer
 
@@ -67,7 +69,9 @@ The `hi → hi` mean uses Phase 4's 32-bit re-score (0.8274, 0.8237, 0.8174); Ph
 | Marathi | **−0.0169** (SD 0.0023) | −0.0142 / −0.0186 / −0.0178 | The Hindi model beats the Marathi-trained one, on all three seeds. |
 | Bengali | **+0.0095** (SD 0.0051) | +0.0154 / +0.0063 / +0.0068 | In-language training helps slightly, on all three seeds. |
 
-By type, the largest gaps are on ORG (Marathi −0.0364, Bengali +0.0165); Bengali LOC changes sign across seeds, so it is not established. **Figure:** the matrix as a heatmap is [results/phase4_transfer_matrix.png](../../results/phase4_transfer_matrix.png). Because the Hindi model beats the Marathi in-language run, that run is a baseline, not a true upper bound.
+By type, the largest gaps are on ORG (Marathi −0.0364, Bengali +0.0165); Bengali LOC changes sign across seeds, so it is not established. **Figure 2:** the matrix as a heatmap is [results/phase4_transfer_matrix.png](../../results/phase4_transfer_matrix.png). Because the Hindi model beats the Marathi in-language run, that run is a baseline, not a true upper bound.
+
+![Transfer matrix heatmap: mean gold F1 for models trained on Hindi, Marathi and Bengali and tested on each language](../../results/phase4_transfer_matrix.png)
 
 ## 6. Stage 4: LLM prompting
 
@@ -95,7 +99,13 @@ Hindi gold test, 864 sentences, entity-level micro-F1.
 
 The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zero-shot. Prompting an open 7B model is about 0.16 F1 behind the fine-tuned MuRIL, which is itself the finding: for Hindi NER with silver training data available, fine-tuning a small encoder beats prompting a larger general model.
 
-**Error analysis** ([phase5/error_analysis.md](../phase5/error_analysis.md), 864 gold sentences, same sentences for all systems):
+**Figure 3:** entity F1 by type for the five Hindi systems. ORG is the lowest bar in every group. All values are in the table above.
+
+![Grouped bars of entity F1 for PER, ORG and LOC for MuRIL, BiLSTM-CRF, IndicBERT, LLM few-shot and LLM zero-shot on the Hindi gold test set](../../results/phase6_hindi_comparison.png)
+
+**Error analysis** ([phase5/error_analysis.md](../phase5/error_analysis.md), 864 gold sentences, same sentences for all systems). **Figure 4** shows the error kinds per system; the counts are in the bullets below and in `results/error_analysis/error_counts.csv`.
+
+![Stacked horizontal bars of boundary, missed, spurious and type-confusion errors for five Hindi systems, from 480 for MuRIL to 1,122 for LLM zero-shot](../../results/phase6_error_kinds.png)
 
 - **ORG is the weakest type for every model** (0.7444 MuRIL, 0.5956 LLM few-shot). Per-type, the LLM is furthest from MuRIL on PER (−0.217), because of boundaries; ORG −0.149; LOC −0.103.
 - **MuRIL:** most errors are spurious spans (205 of 480) and boundaries (167); ORG alone has 94 spurious spans and 64 boundary errors.
@@ -123,7 +133,7 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 - Silver training labels carry noise; the gold test sets are small (864 Hindi sentences), so differences of about a point are within seed variation (MuRIL ranges 0.8174 to 0.8274 across three seeds on Hindi).
 - The BiLSTM-CRF and IndicBERT rows are single-seed and not tuned. The LLM row is one model, one frozen prompt and one greedy run, with no measured spread; the few-shot examples carry silver labels.
 - An earlier 200-sentence LLM draft was run on gold test sentences and retired because it was unpinned and untraceable. Its scores are not reported, but the 3B candidate, the "copy each entity exactly as written" instruction wording, the choices of 8 few-shot examples and batch size 8, and the error-sorting code carried over from it, so the final setup may not be fully independent of the gold test set. The final model and prompt were then selected on a silver validation sample, and the gold test set was scored once with everything frozen.
-- Reproducibility: pinned library versions, fixed seeds, pinned Hugging Face revisions for every checkpoint and for the LLM, and a gate script for each of Phases 1 to 5 ([scripts/](../../scripts/)) that checks the logged rows, the executed notebooks and the docs.
+- Reproducibility: pinned library versions, fixed seeds, pinned Hugging Face revisions for every checkpoint and for the LLM, and a gate script for each of Phases 1 to 6 ([scripts/](../../scripts/)) that checks the logged rows, the executed notebooks and the docs. `scripts/phase6_gate.py` recomputes the report's numbers from their sources and checks that the report states them; `scripts/phase6_figures.py` redraws Figures 3 and 4 from the logged results.
 - References: Lample et al., *Neural Architectures for Named Entity Recognition*, NAACL 2016 ([arXiv:1603.01360](https://arxiv.org/abs/1603.01360)); Mhaske et al., *Naamapadam*, ACL 2023 ([arXiv:2212.10168](https://arxiv.org/abs/2212.10168)).
 
 ## Appendix A: where each number comes from
@@ -138,5 +148,6 @@ The ranking is MuRIL > BiLSTM-CRF > IndicBERT (untuned) > LLM few-shot > LLM zer
 | LLM 0.6328 and 0.6643, per-type, malformed 11 and 5 | `results.csv`, rows `LLM-zero-shot` and `LLM-few-shot`, commit `f1d8cbd` |
 | LLM error counts, example spans, MuRIL error counts | [final_errors.csv](../../results/phase5/final_errors.csv) and [final_predictions.jsonl](../../results/phase5/final_predictions.jsonl) |
 | Parser ceiling 0.9984 | `scripts/phase5_parser.py` on the Hindi gold test set (documented in [phase5/README.md](../phase5/README.md)) |
+| Figures 3 and 4 | `scripts/phase6_figures.py`, drawn from `results.csv` and `results/error_analysis/error_counts.csv`; Figures 1 and 2 are the Phase 3 and Phase 4 images |
 | Cross-stage and cross-language error counts, consistent wins, tokenizer and script statistics | [results/error_analysis/](../../results/error_analysis/), from [phase5-cross-stage-errors.ipynb](../../notebooks/phase5-cross-stage-errors.ipynb), commit `a53f15e` |
 | Validation-sample numbers (model choice, prompt rounds) | [phase5/README.md](../phase5/README.md), from the two validation Kaggle runs (silver labels; not comparable with gold) |
