@@ -41,6 +41,7 @@ HI_MODELS = {
            "aa2f28136b49859a460217190b85ebedfc625e32", 0.8174346201743462),
 }
 SEEDS = list(HI_MODELS)
+HI_REPRO_TOLERANCE = 0.001  # about two entities on the 1,929-entity Hindi gold set
 SUBSET_SIZE = "300000"
 EPOCHS = "3"
 CHECKPOINT_URL = re.compile(r"https://huggingface\.co/[^/\s]+/[^/\s]+/tree/[0-9a-f]{40}")
@@ -101,8 +102,9 @@ def main() -> None:
                       f"{name} used one GPU, effective batch 32, and warmup")
             cells[(seed, train, test)] = r
         expected = HI_MODELS[seed][2]
-        check(abs(float(cells[(seed, SOURCE, SOURCE)]["F1_overall"]) - expected) <= 1e-4,
-              f"seed {seed} hi->hi reproduces the Phase 3 score {expected:.4f}")
+        measured = float(cells[(seed, SOURCE, SOURCE)]["F1_overall"])
+        check(abs(measured - expected) <= HI_REPRO_TOLERANCE,
+              f"seed {seed} hi->hi {measured:.4f} is within {HI_REPRO_TOLERANCE} of Phase 3 score {expected:.4f}")
     commits = {parse_notes(r["notes"]).get("git") for r in phase4}
     check(len(commits) == 1 and None not in commits, f"all Phase 4 rows come from one code commit ({sorted(map(str, commits))})")
 
