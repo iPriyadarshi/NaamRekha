@@ -2,7 +2,7 @@
 
 > **Status: final run done, gate passed.** Final gold results below come from one clean Kaggle execution of commit `f1d8cbd`; every number is in [results.csv](../../results/results.csv) or reproducible from [results/phase5/](../../results/phase5/).
 
-Notebook: [phase5-llm-prompting.ipynb](../../notebooks/phase5-llm-prompting.ipynb). Parser: [phase5_parser.py](../../scripts/phase5_parser.py), tested by [test_phase5_parser.py](../../scripts/test_phase5_parser.py). Gate: [phase5_gate.py](../../scripts/phase5_gate.py). Error analysis: [error_analysis.md](error_analysis.md).
+Notebook: [phase5-llm-prompting.ipynb](../../notebooks/phase5-llm-prompting.ipynb). Parser: [phase5_parser.py](../../scripts/phase5_parser.py), tested by [test_phase5_parser.py](../../scripts/test_phase5_parser.py). Gate: [phase5_gate.py](../../scripts/phase5_gate.py). Error analysis: [error_analysis.md](error_analysis.md), with the cross-stage notebook [phase5-cross-stage-errors.ipynb](../../notebooks/phase5-cross-stage-errors.ipynb).
 
 The job of this phase: prompt a self-hosted open LLM (loaded in the notebook, no external API) for Hindi NER with zero-shot and few-shot prompts, turn its output into IOB2 tags, score it with the shared `src.evaluate`, and explain where it fails. This is a baseline; the expected finding is that it trails fine-tuned MuRIL (0.8274).
 
