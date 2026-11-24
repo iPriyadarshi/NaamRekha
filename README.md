@@ -38,3 +38,12 @@ uv run jupyter lab      # or: uv run python ...
 Add the dev tools (notebooks, linting) with `uv sync --group dev`. Commit `uv.lock` so everyone resolves the same versions. If someone needs a pip-style file, export one with `uv export --format requirements-txt > requirements.txt`.
 
 Real training runs on free Colab / Kaggle GPUs, which provide their own Python and CUDA stack. See [docs/04-compute.md](docs/04-compute.md).
+
+## Website
+
+The docs, report and results are published to GitHub Pages on every push to `main` by [.github/workflows/pages.yml](.github/workflows/pages.yml). Preview locally with:
+
+```
+uv run --only-group docs python scripts/build_site.py
+uv run --only-group docs mkdocs serve
+```

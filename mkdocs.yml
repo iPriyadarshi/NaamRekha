@@ -1,0 +1,62 @@
+# Project website, published to GitHub Pages by .github/workflows/pages.yml.
+# The source is staged by scripts/build_site.py; build locally with:
+#   uv run --only-group docs python scripts/build_site.py
+#   uv run --only-group docs mkdocs serve
+site_name: NaamRekha
+site_description: Named Entity Recognition for Hindi and cross-lingual transfer to Marathi and Bengali.
+site_url: https://ipriyadarshi.github.io/NaamRekha/
+repo_url: https://github.com/iPriyadarshi/NaamRekha
+repo_name: iPriyadarshi/NaamRekha
+edit_uri: ""
+
+docs_dir: build/site_src
+site_dir: build/site
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.highlight
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Report: docs/phase6/report.md
+  - Phases:
+      - "Phase 1: Data and infrastructure": docs/phase1/README.md
+      - "Phase 2: BiLSTM-CRF": docs/phase2/README.md
+      - "Phase 3: MuRIL and IndicBERT": docs/phase3/README.md
+      - "Phase 4: Cross-lingual transfer": docs/phase4/README.md
+      - "Phase 5: LLM prompting": docs/phase5/README.md
+      - "Phase 5: Error analysis": docs/phase5/error_analysis.md
+  - Team guidelines:
+      - Overview: docs/README.md
+      - Problem and approach: docs/00-overview.md
+      - Roadmap: docs/01-roadmap.md
+      - Roles: docs/02-roles.md
+      - Conventions: docs/03-conventions.md
+      - Compute: docs/04-compute.md
+      - Pitfalls: docs/05-pitfalls.md
+      - Decisions log: docs/06-decisions.md

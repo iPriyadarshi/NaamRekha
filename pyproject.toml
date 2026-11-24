@@ -35,6 +35,9 @@ dev = [
     "jupyterlab",
     "ruff",
 ]
+docs = [
+    "mkdocs-material>=9.8.2",
+]
 
 [tool.uv]
 # Exact versions are locked in uv.lock (commit it). Notebooks still pin
