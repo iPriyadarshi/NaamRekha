@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NaamRekha NER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fcfcfb;
+    --surface: #ffffff;
+    --text: #1d1d1b;
+    --muted: #5f5e5a;
+    --border: #e3e2de;
+    --accent: #2a5bd7;
+    --accent-text: #ffffff;
+    --per: #2a78d6;
+    --per-bg: #e3eefb;
+    --org: #c4501f;
+    --org-bg: #fbe8de;
+    --loc: #13875e;
+    --loc-bg: #dcf3ea;
+    --error: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615;
+      --surface: #1f1f1d;
+      --text: #ecebe7;
+      --muted: #a3a29d;
+      --border: #363532;
+      --accent: #7aa2ff;
+      --accent-text: #10131a;
+      --per: #8ab8f0;
+      --per-bg: #1c2f47;
+      --org: #f3a27c;
+      --org-bg: #45291c;
+      --loc: #6fd3a8;
+      --loc-bg: #173a2d;
+      --error: #f2b8b5;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 "Noto Sans", "Noto Sans Devanagari", "Noto Sans Bengali", system-ui, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 1.75rem; margin: 0 0 4px; }
+  .lede { color: var(--muted); margin: 0 0 24px; }
+  a { color: var(--accent); }
+  label { display: block; font-weight: 600; margin: 0 0 6px; }
+  textarea, select {
+    width: 100%;
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  textarea { min-height: 140px; resize: vertical; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
+  .examples button {
+    font: inherit; font-size: 0.875rem;
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 4px 12px; cursor: pointer;
+  }
+  .examples button:hover { color: var(--text); border-color: var(--muted); }
+  .row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+  .row .field { flex: 1 1 280px; }
+  #run {
+    font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--accent-text);
+    border: 0; border-radius: 8px; padding: 10px 20px; cursor: pointer;
+  }
+  #run:disabled { opacity: 0.6; cursor: progress; }
+  #status { color: var(--muted); font-size: 0.875rem; min-height: 1.6em; margin: 12px 0 0; }
+  #status.error { color: var(--error); }
+  progress { width: 100%; height: 6px; display: none; }
+  progress.show { display: block; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+  }
+  .card[hidden] { display: none; }
+  #output { font-size: 1.125rem; line-height: 2.1; white-space: pre-wrap; overflow-wrap: anywhere; }
+  mark { border-radius: 4px; padding: 1px 4px; color: inherit; }
+  mark .tag { font-size: 0.65rem; font-weight: 600; margin-left: 4px; letter-spacing: 0.04em; vertical-align: 0.15em; }
+  mark.PER { background: var(--per-bg); } mark.PER .tag { color: var(--per); }
+  mark.ORG { background: var(--org-bg); } mark.ORG .tag { color: var(--org); }
+  mark.LOC { background: var(--loc-bg); } mark.LOC .tag { color: var(--loc); }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9375rem; }
+  th, td { text-align: left; padding: 6px 8px; border-top: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; border-top: 0; }
+  td.num { font-variant-numeric: tabular-nums; }
+  footer { color: var(--muted); font-size: 0.875rem; margin-top: 32px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>NaamRekha NER</h1>
+  <p class="lede">Find <strong>person</strong>, <strong>organisation</strong> and <strong>location</strong> names in Hindi, Marathi and Bengali. The default model was trained only on Hindi; on Marathi and Bengali it runs zero-shot.</p>
+
+  <label for="text">Text</label>
+  <textarea id="text" placeholder="Paste Hindi, Marathi or Bengali text"></textarea>
+  <div class="examples" id="examples"></div>
+
+  <div class="row">
+    <div class="field">
+      <label for="model">Model</label>
+      <select id="model"></select>
+    </div>
+    <button id="run" type="button">Find names</button>
+  </div>
+  <progress id="progress" max="100" value="0"></progress>
+  <p id="status" role="status"></p>
+
+  <section class="card" id="result" hidden>
+    <div id="output"></div>
+    <table id="table">
+      <thead><tr><th>Name</th><th>Type</th><th>Confidence</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <footer>
+    Models run in your browser with transformers.js, using int8-quantized ONNX exports (about 240 MB each, downloaded once and cached).
+    Scores on the model cards are for the full-precision weights.
+    <a href="https://github.com/iPriyadarshi/NaamRekha">Code</a> ·
+    <a href="https://ipriyadarshi.github.io/NaamRekha/docs/phase6/report/">Report</a> ·
+    <a href="https://huggingface.co/priyadarshi-su/naamrekha-muril-hi">Model</a>
+  </footer>
+</main>
+
+<script type="module">
+import { AutoTokenizer, AutoModelForTokenClassification, Tensor, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1";
+
+env.allowLocalModels = false;
+
+const MODELS = {
+  hi: { repo: "priyadarshi-su/naamrekha-muril-hi", name: "Hindi-trained MuRIL (zero-shot on Marathi and Bengali)" },
+  mr: { repo: "priyadarshi-su/naamrekha-muril_mr_n300000_e3_lr2e-05_s42_36701790", name: "Marathi-trained MuRIL" },
+  bn: { repo: "priyadarshi-su/naamrekha-muril_bn_n300000_e3_lr2e-05_s42_46e8e677", name: "Bengali-trained MuRIL" },
+};
+const EXAMPLES = [
+  { label: "Hindi", text: "प्रधानमंत्री नरेंद्र मोदी ने नई दिल्ली में भारतीय रिज़र्व बैंक के अधिकारियों से मुलाकात की।" },
+  { label: "Marathi", text: "सचिन तेंडुलकर यांनी मुंबई येथे भारतीय क्रिकेट नियामक मंडळाच्या बैठकीत भाग घेतला." },
+  { label: "Bengali", text: "রবীন্দ্রনাথ ঠাকুর কলকাতায় জন্মগ্রহণ করেন এবং বিশ্বভারতী বিশ্ববিদ্যালয় প্রতিষ্ঠা করেন।" },
+];
+const TYPE_NAMES = { PER: "Person", ORG: "Organisation", LOC: "Location" };
+
+// Words as in Naamapadam: runs of letters, marks and digits (with ZWJ/ZWNJ), and
+// each punctuation character on its own. The models were trained on sentences of
+// up to 128 subwords, with each word's label on its first subword.
+const WORD = /[\p{L}\p{M}\p{N}‌‍]+|[^\s\p{L}\p{M}\p{N}‌‍]/gu;
+const SENTENCE_END = new Set(["।", "॥", ".", "?", "!"]);
+const MAX_SUBWORDS = 126;
+const MAX_CHARS = 5000;
+
+const $ = (id) => document.getElementById(id);
+const textEl = $("text"), modelEl = $("model"), runEl = $("run");
+const statusEl = $("status"), progressEl = $("progress");
+const loaded = new Map();
+
+for (const [key, m] of Object.entries(MODELS)) modelEl.add(new Option(m.name, key));
+for (const ex of EXAMPLES) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = ex.label + " example";
+  b.onclick = () => { textEl.value = ex.text; run(); };
+  $("examples").append(b);
+}
+
+function setStatus(msg, isError = false) {
+  statusEl.textContent = msg;
+  statusEl.classList.toggle("error", isError);
+}
+
+async function load(key) {
+  if (!loaded.has(key)) {
+    const { repo } = MODELS[key];
+    const promise = (async () => {
+      const files = {};
+      const progress_callback = (p) => {
+        if (p.status === "progress" && p.total) {
+          files[p.file] = [p.loaded, p.total];
+          const [done, total] = Object.values(files).reduce((a, [l, t]) => [a[0] + l, a[1] + t], [0, 0]);
+          progressEl.value = (100 * done) / total;
+          progressEl.classList.add("show");
+          setStatus(`Downloading model… ${Math.round(done / 1e6)} of ${Math.round(total / 1e6)} MB (first time only)`);
+        }
+      };
+      const tokenizer = await AutoTokenizer.from_pretrained(repo);
+      const model = await AutoModelForTokenClassification.from_pretrained(repo, { dtype: "q8", progress_callback });
+      progressEl.classList.remove("show");
+      return { tokenizer, model };
+    })();
+    loaded.set(key, promise);
+    promise.catch(() => loaded.delete(key));
+  }
+  return loaded.get(key);
+}
+
+function softmaxArgmax(row) {
+  let best = 0;
+  for (let i = 1; i < row.length; i++) if (row[i] > row[best]) best = i;
+  let sum = 0;
+  for (const v of row) sum += Math.exp(v - row[best]);
+  return [best, 1 / sum];
+}
+
+async function tag(text, { tokenizer, model }) {
+  const [CLS, SEP] = tokenizer.encode("");
+  const id2label = model.config.id2label;
+  const words = [...text.matchAll(WORD)].map((m) => ({
+    start: m.index,
+    end: m.index + m[0].length,
+    ids: tokenizer.encode(m[0], { add_special_tokens: false }).slice(0, MAX_SUBWORDS),
+  }));
+
+  // Group words into sentences, splitting further if a sentence is too long.
+  const chunks = [];
+  let chunk = [], size = 0;
+  for (const w of words) {
+    if (chunk.length && size + w.ids.length > MAX_SUBWORDS) { chunks.push(chunk); chunk = []; size = 0; }
+    chunk.push(w); size += w.ids.length;
+    if (SENTENCE_END.has(text.slice(w.start, w.end))) { chunks.push(chunk); chunk = []; size = 0; }
+  }
+  if (chunk.length) chunks.push(chunk);
+
+  for (const chunk of chunks) {
+    const ids = [CLS];
+    for (const w of chunk) { w.first = w.ids.length ? ids.length : -1; ids.push(...w.ids); }
+    ids.push(SEP);
+    const dims = [1, ids.length];
+    const { logits } = await model({
+      input_ids: new Tensor("int64", BigInt64Array.from(ids, BigInt), dims),
+      attention_mask: new Tensor("int64", new BigInt64Array(ids.length).fill(1n), dims),
+      token_type_ids: new Tensor("int64", new BigInt64Array(ids.length), dims),
+    });
+    const n = logits.dims[2];
+    for (const w of chunk) {
+      if (w.first < 0) { w.label = "O"; continue; }
+      const [best, prob] = softmaxArgmax(logits.data.subarray(w.first * n, (w.first + 1) * n));
+      w.label = id2label[best];
+      w.prob = prob;
+    }
+  }
+
+  // IOB2 to spans. An I- tag that does not continue a span of its type starts one,
+  // as seqeval does when scoring.
+  const spans = [];
+  let cur = null;
+  for (const w of words) {
+    const [prefix, type] = w.label === "O" ? ["O", null] : w.label.split("-");
+    if (prefix === "I" && cur && cur.type === type) {
+      cur.end = w.end; cur.probs.push(w.prob);
+    } else if (prefix === "O") {
+      cur = null;
+    } else {
+      cur = { type, start: w.start, end: w.end, probs: [w.prob] };
+      spans.push(cur);
+    }
+  }
+  return spans.map((s) => ({ ...s, score: s.probs.reduce((a, b) => a + b, 0) / s.probs.length }));
+}
+
+function render(text, spans) {
+  const out = $("output");
+  out.replaceChildren();
+  let pos = 0;
+  for (const s of spans) {
+    out.append(text.slice(pos, s.start));
+    const mark = document.createElement("mark");
+    mark.className = s.type;
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = s.type;
+    mark.append(text.slice(s.start, s.end), tag);
+    out.append(mark);
+    pos = s.end;
+  }
+  out.append(text.slice(pos));
+
+  const body = $("table").tBodies[0];
+  body.replaceChildren();
+  for (const s of spans) {
+    const tr = body.insertRow();
+    tr.insertCell().textContent = text.slice(s.start, s.end);
+    tr.insertCell().textContent = TYPE_NAMES[s.type] ?? s.type;
+    const c = tr.insertCell();
+    c.className = "num";
+    c.textContent = s.score.toFixed(3);
+  }
+  $("table").hidden = spans.length === 0;
+  $("result").hidden = false;
+}
+
+async function run() {
+  const text = textEl.value.slice(0, MAX_CHARS);
+  if (!text.trim()) { setStatus("Enter some text first."); return; }
+  runEl.disabled = true;
+  try {
+    if (!loaded.has(modelEl.value)) setStatus("Loading model…");
+    const m = await load(modelEl.value);
+    setStatus("Tagging…");
+    const spans = await tag(text, m);
+    render(text, spans);
+    setStatus(spans.length ? `Found ${spans.length} name${spans.length === 1 ? "" : "s"}.` : "No names found.");
+  } catch (err) {
+    console.error(err);
+    progressEl.classList.remove("show");
+    setStatus(`Something went wrong: ${err.message}`, true);
+  } finally {
+    runEl.disabled = false;
+  }
+}
+
+runEl.onclick = run;
+textEl.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run(); });
+</script>
+</body>
+</html>

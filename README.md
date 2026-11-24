@@ -4,6 +4,8 @@ Named Entity Recognition for Indian languages. Tag person (PER), location (LOC),
 
 Dataset: [ai4bharat/naamapadam](https://huggingface.co/datasets/ai4bharat/naamapadam).
 
+**Try it:** [live demo](https://huggingface.co/spaces/priyadarshi-su/naamrekha-ner) · [model](https://huggingface.co/priyadarshi-su/naamrekha-muril-hi) · [website and report](https://ipriyadarshi.github.io/NaamRekha/). The model cards, the demo page and the ONNX export script live in [hub/](hub/).
+
 ## Start here
 
 Read [docs/README.md](docs/README.md) first. It is the single source of truth for how the team works, and it links to the plan, roles, conventions, compute strategy, pitfalls, and decisions log.
