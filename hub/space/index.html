@@ -133,8 +133,8 @@
   </section>
 
   <footer>
-    Models run in your browser with transformers.js, using int8-quantized ONNX exports (about 240 MB each, downloaded once and cached).
-    Scores on the model cards are for the full-precision weights.
+    Models run in your browser with transformers.js, using full-precision ONNX exports that reproduce the scores on the model cards.
+    Each model is about 950 MB, downloaded once and cached.
     <a href="https://github.com/iPriyadarshi/NaamRekha">Code</a> ·
     <a href="https://ipriyadarshi.github.io/NaamRekha/docs/phase6/report/">Report</a> ·
     <a href="https://huggingface.co/priyadarshi-su/naamrekha-muril-hi">Model</a>
@@ -200,7 +200,7 @@ async function load(key) {
         }
       };
       const tokenizer = await AutoTokenizer.from_pretrained(repo);
-      const model = await AutoModelForTokenClassification.from_pretrained(repo, { dtype: "q8", progress_callback });
+      const model = await AutoModelForTokenClassification.from_pretrained(repo, { dtype: "fp32", progress_callback });
       progressEl.classList.remove("show");
       return { tokenizer, model };
     })();

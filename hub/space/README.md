@@ -22,6 +22,6 @@ Tag person, organisation and location names in Hindi, Marathi and Bengali with M
 
 The default model is trained only on Hindi and runs **zero-shot** on Marathi and Bengali. Switch to an in-language model to compare.
 
-The models run in your browser with [transformers.js](https://huggingface.co/docs/transformers.js), using int8-quantized ONNX exports (about 240 MB each, downloaded once and cached). The scores on the model cards are for the full-precision PyTorch weights.
+The models run in your browser with [transformers.js](https://huggingface.co/docs/transformers.js), using full-precision ONNX exports (about 950 MB each, downloaded once and cached). Each export was checked to reproduce the gold test score on its model card.
 
 Project: [code](https://github.com/iPriyadarshi/NaamRekha) · [website](https://ipriyadarshi.github.io/NaamRekha/) · [model](https://huggingface.co/priyadarshi-su/naamrekha-muril-hi)
